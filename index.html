@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Данные • iOS 26</title>
+  <title>Данные</title>
   <style>
-    /* ----- сброс & база (iOS‑стиль: чёрный, белый, серый) ----- */
     * {
       margin: 0;
       padding: 0;
@@ -13,7 +12,7 @@
     }
 
     body {
-      background: #000000;  /* глубокий чёрный фон (OLED) */
+      background: #000000;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
       min-height: 100vh;
       display: flex;
@@ -25,7 +24,45 @@
       padding: 0 0 16px 0;
     }
 
-    /* основной скролл‑контейнер — как iOS Settings */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.7s;
+      pointer-events: none;
+    }
+
+    .loading-symbol {
+      font-size: 140px;
+      font-weight: 300;
+      color: #ffffff;
+      opacity: 0.9;
+      text-shadow: 0 0 30px rgba(255,255,255,0.3);
+      animation: subtlePulse 2.2s infinite;
+    }
+
+    @keyframes subtlePulse {
+      0% { opacity: 0.75; transform: scale(0.98); }
+      50% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0.75; transform: scale(0.98); }
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
     .ios-root {
       width: 100%;
       max-width: 720px;
@@ -33,7 +70,6 @@
       padding: 18px 16px 32px 16px;
     }
 
-    /* ----- заголовок в стиле крупной навигации iOS 26 ----- */
     .ios-title-section {
       margin-bottom: 28px;
     }
@@ -50,14 +86,12 @@
     .ios-subhead {
       font-size: 15px;
       font-weight: 400;
-      color: #8e8e93;  /* системный серый iOS */
-      text-transform: none;
+      color: #8e8e93;
       letter-spacing: -0.2px;
     }
 
-    /* ----- секции (группы) — имитация табличных групп iOS ----- */
     .ios-section {
-      background: #1c1c1e;   /* тёмно-серый, почти чёрный, но с выделением */
+      background: #1c1c1e;
       border-radius: 16px;
       margin-bottom: 28px;
       overflow: hidden;
@@ -66,7 +100,6 @@
       border: 0.5px solid #3a3a3c;
     }
 
-    /* если нужно лёгкое разделение внутри секции (iOS‑стиль) */
     .ios-section-header {
       padding: 14px 18px 6px 18px;
       font-size: 13px;
@@ -76,7 +109,6 @@
       color: #8e8e93;
     }
 
-    /* ----- строка таблицы (row) — абсолютно плоская, без карточек ----- */
     .ios-row {
       display: flex;
       align-items: flex-start;
@@ -88,7 +120,6 @@
       border-bottom: none;
     }
 
-    /* левая метка */
     .row-label {
       width: 130px;
       flex-shrink: 0;
@@ -98,7 +129,6 @@
       letter-spacing: -0.3px;
     }
 
-    /* правое значение */
     .row-value {
       flex: 1;
       font-size: 16px;
@@ -108,25 +138,12 @@
       text-align: right;
     }
 
-    /* специально для длинных user‑agent */
     .mono-value {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
       font-size: 14px;
       color: #d1d1d6;
     }
 
-    /* флаги / индикаторы */
-    .security-badge {
-      display: inline-block;
-      background: #2c2c2e;
-      padding: 2px 10px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #ffffff;
-    }
-
-    /* маленькая подпись (в духе iOS) */
     .footnote {
       margin-top: 8px;
       padding: 0 18px;
@@ -134,7 +151,6 @@
       color: #8e8e93;
     }
 
-    /* для статусных пилюль (vpn, proxy …) */
     .tag-group {
       display: flex;
       flex-wrap: wrap;
@@ -152,27 +168,15 @@
       border: 0.5px solid #3a3a3c;
     }
 
-    .tag-warning {
-      color: #ff9f0a;  /* оранжевый акцент, но в рамках ч/б можно оставить */
-      border-color: #ff9f0a40;
-    }
-
-    .tag-critical {
-      color: #ff453a;
-      border-color: #ff453a40;
-    }
-
     .tag-neutral {
       color: #ffffff;
     }
 
-    /* загрузочная анимация — сдержанная */
     .loading-placeholder {
       text-align: right;
       color: #8e8e93;
     }
 
-    /* адаптивность: на очень узких экранах метка может быть меньше */
     @media (max-width: 480px) {
       .row-label {
         width: 110px;
@@ -182,131 +186,87 @@
         font-size: 32px;
       }
     }
-
-    /* плавные переходы */
-    .ios-row, .tag {
-      transition: background 0.2s ease;
-    }
-
-    /* убираем любые карточные тени — только чистые линии */
-    .ios-section {
-      box-shadow: none;
-    }
-
-    /* стилизация ip-блока (обёртка) */
-    .ip-detail-block {
-      background: transparent;
-    }
-
-    /* разделитель внутри секции — эстетика */
-    .divider {
-      height: 0.5px;
-      background: #2c2c2e;
-      margin: 0 18px;
-    }
   </style>
 </head>
 <body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-symbol">⚚</div>
+</div>
+
 <div class="ios-root">
-  
-  <!-- Заголовок iOS 26: крупный, чистый -->
   <div class="ios-title-section">
     <div class="ios-large-title">Данные</div>
     <div class="ios-subhead">Устройство и сеть</div>
   </div>
 
-  <!-- Секция 1: информация об устройстве (без внешних API) -->
   <div class="ios-section">
     <div class="ios-section-header">Общие сведения</div>
-    
-    <!-- Локальное время браузера -->
     <div class="ios-row">
-      <span class="row-label">🕐 Время</span>
-      <span class="row-value" id="localTimeDisplay">—</span>
+      <span class="row-label">Время</span>
+      <span class="row-value" id="localTimeDisplay"></span>
     </div>
-    
-    <!-- Тип устройства -->
     <div class="ios-row">
-      <span class="row-label">📱 Устройство</span>
-      <span class="row-value" id="deviceTypeDisplay">—</span>
+      <span class="row-label">Устройство</span>
+      <span class="row-value" id="deviceTypeDisplay"></span>
     </div>
-    
-    <!-- Браузер -->
     <div class="ios-row">
-      <span class="row-label">🌐 Браузер</span>
-      <span class="row-value" id="browserDisplay">—</span>
+      <span class="row-label">Браузер</span>
+      <span class="row-value" id="browserDisplay"></span>
     </div>
-    
-    <!-- Язык -->
     <div class="ios-row">
-      <span class="row-label">🗣️ Язык</span>
-      <span class="row-value" id="languageDisplay">—</span>
+      <span class="row-label">Язык</span>
+      <span class="row-value" id="languageDisplay"></span>
     </div>
-    
-    <!-- Платформа -->
     <div class="ios-row">
-      <span class="row-label">🖥️ Платформа</span>
-      <span class="row-value" id="platformDisplay">—</span>
+      <span class="row-label">Платформа</span>
+      <span class="row-value" id="platformDisplay"></span>
     </div>
-    
-    <!-- Экран -->
     <div class="ios-row">
-      <span class="row-label">📏 Экран</span>
-      <span class="row-value" id="screenDisplay">—</span>
+      <span class="row-label">Экран</span>
+      <span class="row-value" id="screenDisplay"></span>
     </div>
-    
-    <!-- Часовой пояс -->
     <div class="ios-row">
-      <span class="row-label">🌍 Часовой пояс</span>
-      <span class="row-value" id="timezoneDisplay">—</span>
+      <span class="row-label">Часовой пояс</span>
+      <span class="row-value" id="timezoneDisplay"></span>
     </div>
-    
-    <!-- Онлайн статус -->
     <div class="ios-row">
-      <span class="row-label">📡 Интернет</span>
-      <span class="row-value" id="onlineDisplay">—</span>
+      <span class="row-label">Интернет</span>
+      <span class="row-value" id="onlineDisplay"></span>
     </div>
-    
-    <!-- User Agent (обрезаем, но покажем аккуратно) -->
     <div class="ios-row">
-      <span class="row-label">🔍 User Agent</span>
-      <span class="row-value mono-value" id="uaDisplay">—</span>
+      <span class="row-label">User Agent</span>
+      <span class="row-value mono-value" id="uaDisplay"></span>
     </div>
   </div>
 
-  <!-- Секция 2: IP и геоданные (динамическое наполнение) -->
   <div class="ios-section" id="ipSection">
-    <div class="ios-section-header">Сетевые данные · ipapi.is</div>
-    
-    <!-- Контейнер, куда JS вставит строки таблицы -->
+    <div class="ios-section-header">Сетевые данные</div>
     <div id="ipDataContainer">
-      <!-- первоначальный индикатор загрузки -->
       <div class="ios-row">
         <span class="row-label">Загрузка</span>
-        <span class="row-value loading-placeholder">ожидание ответа...</span>
+        <span class="row-value loading-placeholder">ожидание ответа</span>
       </div>
     </div>
   </div>
   
-  <!-- Небольшая сноска в стиле iOS -->
-  <div class="footnote">
-    ✅ Данные IP получены через ipapi.is  •  iOS 26 design · ч/б/серый
-  </div>
+  <div class="footnote">ipapi.is</div>
 </div>
 
 <script>
   (function() {
-    "use strict";
-
-    // ---------- вспомогательные функции ----------
     const $ = (id) => document.getElementById(id);
 
-    // форматирование времени
     function formatLocalTime() {
       return new Date().toLocaleString('ru-RU');
     }
 
-    // определение браузера (человеческое имя)
+    function updateLocalTime() {
+      if ($('localTimeDisplay')) {
+        $('localTimeDisplay').textContent = formatLocalTime();
+      }
+    }
+
     function detectBrowser(ua) {
       if (ua.includes("Edg/")) return "Microsoft Edge";
       if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
@@ -316,25 +276,20 @@
       return "Неизвестный";
     }
 
-    // тип устройства
     function detectDeviceType(ua) {
-      if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) {
-        return "📱 Телефон / Планшет";
-      }
-      return "💻 Компьютер";
+      if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) return "Телефон / Планшет";
+      return "Компьютер";
     }
 
-    // ---------- заполняем статическую секцию (без API) ----------
     const ua = navigator.userAgent;
-    const language = navigator.language || '—';
-    const platform = navigator.platform || '—';
+    const language = navigator.language || '';
+    const platform = navigator.platform || '';
     const screenW = screen.width;
     const screenH = screen.height;
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const online = navigator.onLine ? "Да" : "Нет";
 
-    // выводим в разметку
-    $('localTimeDisplay').textContent = formatLocalTime();
+    updateLocalTime();
     $('deviceTypeDisplay').textContent = detectDeviceType(ua);
     $('browserDisplay').textContent = detectBrowser(ua);
     $('languageDisplay').textContent = language;
@@ -343,14 +298,13 @@
     $('timezoneDisplay').textContent = timezone;
     $('onlineDisplay').textContent = online;
     
-    // user agent обрежем до 80 символов с многоточием (как в примере)
     const uaShort = ua.length > 80 ? ua.substring(0, 80) + '…' : ua;
     $('uaDisplay').textContent = uaShort;
 
-    // ---------- работа с IP API (ipapi.is) ----------
+    setInterval(updateLocalTime, 1000);
+
     const container = $('ipDataContainer');
     
-    // флаг-эмодзи из country_code
     function countryCodeToFlag(code) {
       if (!code) return '';
       const upper = code.toUpperCase();
@@ -359,10 +313,9 @@
       ) + ' ';
     }
 
-    // рендерим красивую iOS-таблицу с данными
     function renderIPData(data) {
       if (!data || !data.ip) {
-        showIPError('Не удалось загрузить данные IP');
+        showIPError('Не удалось загрузить данные');
         return;
       }
 
@@ -371,26 +324,23 @@
       const asn = data.asn || {};
       const abuse = data.abuse || {};
 
-      // флаг
       const flagEmoji = countryCodeToFlag(loc.country_code);
       
-      // локальное время из API
-      let apiLocalTimeStr = '—';
+      let apiLocalTimeStr = '';
       if (loc.local_time) {
         try {
           apiLocalTimeStr = new Date(loc.local_time).toLocaleString('ru-RU');
         } catch(e) { apiLocalTimeStr = loc.local_time; }
+      } else {
+        apiLocalTimeStr = '';
       }
 
-      // координаты
       const lat = loc.latitude;
       const lon = loc.longitude;
-      const coords = (lat && lon) ? `${lat}, ${lon}` : '—';
+      const coords = (lat && lon) ? `${lat}, ${lon}` : '';
       
-      // город/регион
-      const cityState = `${loc.city || '—'}, ${loc.state || '—'}`;
+      const cityState = `${loc.city || ''}, ${loc.state || ''}`.replace(/^, |, $/g, '') || '';
       
-      // статус безопасности (теги)
       const tags = [];
       if (data.is_vpn) tags.push('VPN');
       if (data.is_proxy) tags.push('Proxy');
@@ -400,77 +350,69 @@
       if (data.is_crawler) tags.push('Бот');
       
       const securityTagsHtml = tags.length 
-        ? tags.map(t => `<span class="tag">🛡️ ${t}</span>`).join('') 
-        : '<span class="tag tag-neutral">✅ Чистое</span>';
+        ? tags.map(t => `<span class="tag">${t}</span>`).join('') 
+        : '<span class="tag tag-neutral">Чистое</span>';
 
-      // провайдер
-      const provider = comp.name || asn.org || asn.descr || '—';
+      const provider = comp.name || asn.org || asn.descr || '';
       
-      // ASN строка
-      const asnDisplay = asn.asn ? `AS${asn.asn} ${asn.descr ? '· '+asn.descr : ''}` : '—';
+      const asnDisplay = asn.asn ? `AS${asn.asn} ${asn.descr ? '· '+asn.descr : ''}` : '';
       
-      // тип сети
-      const companyType = comp.type ? comp.type.toUpperCase() : '—';
+      const companyType = comp.type ? comp.type.toUpperCase() : '';
       
-      // контакт
-      const abuseContact = abuse.email || asn.abuse || '—';
+      const abuseContact = abuse.email || asn.abuse || '';
       
-      // домен провайдера
       const providerDomain = comp.domain ? comp.domain : null;
 
-      // строим чистые строки таблицы в стиле .ios-row
       let rowsHtml = `
         <div class="ios-row">
-          <span class="row-label">🌐 IP‑адрес</span>
+          <span class="row-label">IP адрес</span>
           <span class="row-value">${flagEmoji}${data.ip}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">📍 Страна</span>
-          <span class="row-value">${loc.country || '—'} (${loc.country_code || '—'})</span>
+          <span class="row-label">Страна</span>
+          <span class="row-value">${loc.country || ''} (${loc.country_code || ''})</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">🏙️ Город / Регион</span>
+          <span class="row-label">Город / Регион</span>
           <span class="row-value">${cityState}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">📮 Индекс</span>
-          <span class="row-value">${loc.zip || '—'}</span>
+          <span class="row-label">Индекс</span>
+          <span class="row-value">${loc.zip || ''}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">🗺️ Координаты</span>
+          <span class="row-label">Координаты</span>
           <span class="row-value">${coords}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">⏰ Локальное время</span>
+          <span class="row-label">Локальное время</span>
           <span class="row-value">${apiLocalTimeStr}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">🏢 Провайдер</span>
+          <span class="row-label">Провайдер</span>
           <span class="row-value">${provider}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">🔢 ASN</span>
+          <span class="row-label">ASN</span>
           <span class="row-value mono-value">${asnDisplay}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">📋 Тип сети</span>
+          <span class="row-label">Тип сети</span>
           <span class="row-value">${companyType}</span>
         </div>
       `;
 
-      // если есть домен провайдера — дополнительная строка
       if (providerDomain) {
         rowsHtml += `
         <div class="ios-row">
-          <span class="row-label">🌍 Домен</span>
+          <span class="row-label">Домен</span>
           <span class="row-value">${providerDomain}</span>
         </div>`;
       }
 
-      // строка безопасности (теги)
       rowsHtml += `
         <div class="ios-row">
-          <span class="row-label">🛡️ Безопасность</span>
+          <span class="row-label">Безопасность</span>
           <span class="row-value">
             <div class="tag-group">
               ${securityTagsHtml}
@@ -478,7 +420,7 @@
           </span>
         </div>
         <div class="ios-row">
-          <span class="row-label">📞 Abuse-контакт</span>
+          <span class="row-label">Контакт</span>
           <span class="row-value mono-value">${abuseContact}</span>
         </div>
       `;
@@ -489,16 +431,15 @@
     function showIPError(message) {
       container.innerHTML = `
         <div class="ios-row">
-          <span class="row-label">⚠️ Ошибка</span>
+          <span class="row-label">Ошибка</span>
           <span class="row-value" style="color: #ff453a;">${message}</span>
         </div>
         <div class="ios-row">
-          <span class="row-label">🌐 Резерв</span>
-          <span class="row-value loading-placeholder" id="fallbackIp">пробуем ipify...</span>
+          <span class="row-label">Резерв</span>
+          <span class="row-value loading-placeholder" id="fallbackIp">проверка ipify</span>
         </div>
       `;
       
-      // запасной вариант через ipify (только IP)
       fetch('https://api.ipify.org?format=json')
         .then(res => res.json())
         .then(data => {
@@ -508,22 +449,11 @@
               fb.textContent = data.ip;
               fb.style.color = '#ffffff';
             }
-            // добавим примечание
-            const note = document.createElement('div');
-            note.className = 'footnote';
-            note.style.marginTop = '8px';
-            note.style.padding = '0 18px';
-            note.textContent = 'Детали через ipapi.is недоступны.';
-            container.appendChild(note);
           }
         })
-        .catch(() => {
-          const fb = $('fallbackIp');
-          if (fb) fb.textContent = 'недоступен';
-        });
+        .catch(() => {});
     }
 
-    // запрос к ipapi.is
     fetch('https://api.ipapi.is/')
       .then(response => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -535,9 +465,12 @@
         showIPError('Сервис недоступен');
       });
 
-    // дополнительно: обновление локального времени раз в минуту? не обязательно,
-    // но можно оставить как статику. Пользователь может обновить страницу.
-    // Для iOS-стиля достаточно.
+    window.addEventListener('load', function() {
+      const overlay = $('loadingOverlay');
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+      }, 3000);
+    });
   })();
 </script>
 </body>
