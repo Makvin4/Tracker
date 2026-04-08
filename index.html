@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Информация о вас</title>
+    <title>Ваши данные</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,54 +29,50 @@
             font-weight: bold;
             color: #333;
         }
-        .title {
-            color: #2c3e50;
-        }
     </style>
 </head>
 <body>
     <div class="card">
-        <h1 class="title">📊 Ваши данные</h1>
+        <h1>📊 Информация о вашем устройстве</h1>
         <div class="data" id="info">
-            <p>🔍 Загрузка...</p>
-        </div>
-        <p>🔒 Эта информация видна только вам</p>
-    </div>
-
-    <script>
-        async function showUserData() {
-            try {
-                // Получаем геоданные посетителя
-                const response = await fetch('https://ipapi.co/json/');
-                const geo = await response.json();
+            <script>
+                // Данные которые можно получить без внешних запросов
+                const info = document.getElementById('info');
                 
-                // Формируем данные
-                const userData = {
-                    time: new Date().toLocaleString('ru-RU'),
-                    ip: geo.ip,
-                    country: geo.country_name,
-                    city: geo.city,
-                    region: geo.region,
-                    browser: navigator.userAgent.split(' ').pop(),
-                    device: navigator.userAgent.includes('Mobile') ? '📱 Телефон' : '💻 Компьютер'
-                };
+                const browser = navigator.userAgent;
+                const language = navigator.language;
+                const platform = navigator.platform;
+                const screenWidth = screen.width;
+                const screenHeight = screen.height;
+                const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                const online = navigator.onLine ? "Да" : "Нет";
                 
-                // Показываем на сайте
-                document.getElementById('info').innerHTML = `
-                    <p><span class="label">🕐 Время:</span> ${userData.time}</p>
-                    <p><span class="label">🌐 Ваш IP:</span> ${userData.ip}</p>
-                    <p><span class="label">📍 Страна:</span> ${userData.country}</p>
-                    <p><span class="label">🏙️ Город:</span> ${userData.city || 'Не определён'}</p>
-                    <p><span class="label">🗺️ Регион:</span> ${userData.region || 'Не определён'}</p>
-                    <p><span class="label">💻 Тип устройства:</span> ${userData.device}</p>
+                let deviceType = "Компьютер";
+                if (/Mobile|Android|iPhone|iPad|iPod/i.test(browser)) {
+                    deviceType = "📱 Телефон или планшет";
+                }
+                
+                let browserName = "Неизвестный";
+                if (browser.includes("Chrome")) browserName = "Google Chrome";
+                else if (browser.includes("Firefox")) browserName = "Mozilla Firefox";
+                else if (browser.includes("Safari")) browserName = "Safari";
+                else if (browser.includes("Edge")) browserName = "Microsoft Edge";
+                else if (browser.includes("Opera")) browserName = "Opera";
+                
+                info.innerHTML = `
+                    <p><span class="label">🕐 Время:</span> ${new Date().toLocaleString('ru-RU')}</p>
+                    <p><span class="label">💻 Тип устройства:</span> ${deviceType}</p>
+                    <p><span class="label">🌐 Браузер:</span> ${browserName}</p>
+                    <p><span class="label">🗣️ Язык:</span> ${language}</p>
+                    <p><span class="label">🖥️ Платформа:</span> ${platform}</p>
+                    <p><span class="label">📏 Экран:</span> ${screenWidth} x ${screenHeight} пикселей</p>
+                    <p><span class="label">🌍 Часовой пояс:</span> ${timezone}</p>
+                    <p><span class="label">📡 Интернет:</span> ${online}</p>
+                    <p><span class="label">🔍 User Agent:</span> ${browser.substring(0, 100)}...</p>
                 `;
-                
-            } catch(error) {
-                document.getElementById('info').innerHTML = '<p>❌ Не удалось получить данные</p>';
-            }
-        }
-        
-        showUserData();
-    </script>
+            </script>
+        </div>
+        <p>⚠️ IP-адрес и геоданные скрыты браузером. Эту информацию может получить только сервер.</p>
+    </div>
 </body>
 </html>
