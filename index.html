@@ -2,46 +2,81 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Трекер</title>
+    <title>Информация о вас</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+            background: #f0f0f0;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .data {
+            text-align: left;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .label {
+            font-weight: bold;
+            color: #333;
+        }
+        .title {
+            color: #2c3e50;
+        }
+    </style>
 </head>
 <body>
-    <h1>Страница загружена</h1>
-    <p>Данные о визите отправлены на почту</p>
-    
+    <div class="card">
+        <h1 class="title">📊 Ваши данные</h1>
+        <div class="data" id="info">
+            <p>🔍 Загрузка...</p>
+        </div>
+        <p>🔒 Эта информация видна только вам</p>
+    </div>
+
     <script>
-        // БЕСПЛАТНЫЙ СЕРВИС ДЛЯ ОТПРАВКИ НА ПОЧТУ
-        // Замените YOUR_EMAIL на вашу почту
-        const YOUR_EMAIL = "bdevlogic@gmail.com";
-        
-        // Собираем данные о посетителе
-        fetch('https://ipapi.co/json/')
-            .then(r => r.json())
-            .then(geo => {
-                const data = {
-                    time: new Date().toLocaleString(),
+        async function showUserData() {
+            try {
+                // Получаем геоданные посетителя
+                const response = await fetch('https://ipapi.co/json/');
+                const geo = await response.json();
+                
+                // Формируем данные
+                const userData = {
+                    time: new Date().toLocaleString('ru-RU'),
                     ip: geo.ip,
                     country: geo.country_name,
                     city: geo.city,
-                    device: navigator.userAgent
+                    region: geo.region,
+                    browser: navigator.userAgent.split(' ').pop(),
+                    device: navigator.userAgent.includes('Mobile') ? '📱 Телефон' : '💻 Компьютер'
                 };
                 
-                // Отправляем через бесплатный сервис FormSubmit
-                const formData = new FormData();
-                formData.append('email', YOUR_EMAIL);
-                formData.append('subject', 'Новый посетитель на сайте!');
-                formData.append('message', 
-                    `Время: ${data.time}\n` +
-                    `IP: ${data.ip}\n` +
-                    `Страна: ${data.country}\n` +
-                    `Город: ${data.city}\n` +
-                    `Устройство: ${data.device}`
-                );
+                // Показываем на сайте
+                document.getElementById('info').innerHTML = `
+                    <p><span class="label">🕐 Время:</span> ${userData.time}</p>
+                    <p><span class="label">🌐 Ваш IP:</span> ${userData.ip}</p>
+                    <p><span class="label">📍 Страна:</span> ${userData.country}</p>
+                    <p><span class="label">🏙️ Город:</span> ${userData.city || 'Не определён'}</p>
+                    <p><span class="label">🗺️ Регион:</span> ${userData.region || 'Не определён'}</p>
+                    <p><span class="label">💻 Тип устройства:</span> ${userData.device}</p>
+                `;
                 
-                fetch('https://formsubmit.co/ajax/' + YOUR_EMAIL, {
-                    method: 'POST',
-                    body: formData
-                });
-            });
+            } catch(error) {
+                document.getElementById('info').innerHTML = '<p>❌ Не удалось получить данные</p>';
+            }
+        }
+        
+        showUserData();
     </script>
 </body>
 </html>
