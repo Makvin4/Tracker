@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 650px;
             margin: 50px auto;
             padding: 20px;
             text-align: center;
@@ -28,14 +28,24 @@
         .label {
             font-weight: bold;
             color: #333;
+            display: inline-block;
+            min-width: 160px;
         }
         .ip-box {
             margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
+            padding-top: 15px;
+            border-top: 2px solid #e0e0e0;
         }
         .flag {
             margin-right: 5px;
+        }
+        .small-note {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+        .value {
+            word-break: break-word;
         }
     </style>
 </head>
@@ -69,117 +79,117 @@
                 
                 // Выводим основную информацию (без IP, он загрузится асинхронно)
                 info.innerHTML = `
-                    <p><span class="label">🕐 Время:</span> ${new Date().toLocaleString('ru-RU')}</p>
-                    <p><span class="label">💻 Тип устройства:</span> ${deviceType}</p>
-                    <p><span class="label">🌐 Браузер:</span> ${browserName}</p>
-                    <p><span class="label">🗣️ Язык:</span> ${language}</p>
-                    <p><span class="label">🖥️ Платформа:</span> ${platform}</p>
-                    <p><span class="label">📏 Экран:</span> ${screenWidth} x ${screenHeight} пикселей</p>
-                    <p><span class="label">🌍 Часовой пояс:</span> ${timezone}</p>
-                    <p><span class="label">📡 Интернет:</span> ${online}</p>
-                    <p><span class="label">🔍 User Agent:</span> ${browser.substring(0, 100)}...</p>
+                    <p><span class="label">🕐 Локальное время браузера:</span> <span class="value">${new Date().toLocaleString('ru-RU')}</span></p>
+                    <p><span class="label">💻 Тип устройства:</span> <span class="value">${deviceType}</span></p>
+                    <p><span class="label">🌐 Браузер:</span> <span class="value">${browserName}</span></p>
+                    <p><span class="label">🗣️ Язык:</span> <span class="value">${language}</span></p>
+                    <p><span class="label">🖥️ Платформа:</span> <span class="value">${platform}</span></p>
+                    <p><span class="label">📏 Экран:</span> <span class="value">${screenWidth} x ${screenHeight} пикселей</span></p>
+                    <p><span class="label">🌍 Часовой пояс браузера:</span> <span class="value">${timezone}</span></p>
+                    <p><span class="label">📡 Интернет:</span> <span class="value">${online}</span></p>
+                    <p><span class="label">🔍 User Agent:</span> <span class="value">${browser.substring(0, 80)}...</span></p>
                     <div class="ip-box">
-                        <p><span class="label">🌐 IP и геолокация:</span> <span id="ip-text">Определение...</span></p>
-                        <p><span class="label">🏢 Провайдер (ASN):</span> <span id="isp-text">-</span></p>
-                        <p><span class="label">🛡️ Статус:</span> <span id="security-text">-</span></p>
+                        <p style="font-weight: bold; margin-bottom: 10px;">🌍 Данные с сервера (ipapi.is)</p>
+                        <div id="api-data-container">
+                            <p><span class="label">Загрузка...</span></p>
+                        </div>
                     </div>
                 `;
             </script>
         </div>
-        <p>✅ Данные получены через ipapi.is (бесплатно до 1000 запросов/день)</p>
+        <p class="small-note">✅ Данные IP получены через ipapi.is</p>
     </div>
 
-    <!-- Скрипт для получения данных через ipapi.is -->
     <script>
-        const ipTextEl = document.getElementById('ip-text');
-        const ispTextEl = document.getElementById('isp-text');
-        const securityTextEl = document.getElementById('security-text');
+        const container = document.getElementById('api-data-container');
 
-        function setLoadingError(message) {
-            if (ipTextEl) ipTextEl.textContent = message;
-            if (ispTextEl) ispTextEl.textContent = '—';
-            if (securityTextEl) securityTextEl.textContent = '—';
+        function renderIPData(data) {
+            if (!data || !data.ip) {
+                container.innerHTML = '<p><span class="label">Ошибка:</span> Не удалось загрузить данные IP</p>';
+                return;
+            }
+
+            // Формируем флаг
+            let flagEmoji = '';
+            if (data.location && data.location.country_code) {
+                const countryCode = data.location.country_code.toUpperCase();
+                flagEmoji = countryCode.replace(/./g, char => 
+                    String.fromCodePoint(127397 + char.charCodeAt())
+                ) + ' ';
+            }
+
+            // Статусы безопасности
+            const securityTags = [];
+            if (data.is_vpn) securityTags.push('<span style="color: #e67e22;">🟡 VPN</span>');
+            if (data.is_proxy) securityTags.push('<span style="color: #e67e22;">🟠 Proxy</span>');
+            if (data.is_tor) securityTags.push('<span style="color: #c0392b;">🔴 Tor</span>');
+            if (data.is_datacenter) securityTags.push('<span style="color: #2980b9;">🔵 Хостинг</span>');
+            if (data.is_mobile) securityTags.push('<span style="color: #27ae60;">📱 Мобильная сеть</span>');
+            if (data.is_crawler) securityTags.push('<span style="color: #8e44ad;">🕷️ Бот/Краулер</span>');
+            const securityString = securityTags.length > 0 ? securityTags.join(' | ') : '✅ Чистое соединение';
+
+            // Тип компании/провайдера
+            let companyType = data.company && data.company.type ? data.company.type.toUpperCase() : '—';
+            
+            // Локальное время из API
+            let apiLocalTime = data.location && data.location.local_time 
+                ? new Date(data.location.local_time).toLocaleString('ru-RU') 
+                : '—';
+
+            let html = `
+                <p><span class="label">🌐 IP-адрес:</span> <span class="value">${flagEmoji}${data.ip}</span></p>
+                <p><span class="label">📍 Страна:</span> <span class="value">${data.location?.country || '—'} (${data.location?.country_code || '—'})</span></p>
+                <p><span class="label">🏙️ Город / Регион:</span> <span class="value">${data.location?.city || '—'}, ${data.location?.state || '—'}</span></p>
+                <p><span class="label">📮 Индекс:</span> <span class="value">${data.location?.zip || '—'}</span></p>
+                <p><span class="label">🗺️ Координаты:</span> <span class="value">${data.location?.latitude || '—'}, ${data.location?.longitude || '—'}</span></p>
+                <p><span class="label">⏰ Локальное время (API):</span> <span class="value">${apiLocalTime}</span></p>
+                <p><span class="label">🏢 Провайдер:</span> <span class="value">${data.company?.name || data.asn?.org || '—'}</span></p>
+                <p><span class="label">🔢 ASN:</span> <span class="value">AS${data.asn?.asn || '—'} (${data.asn?.descr || ''})</span></p>
+                <p><span class="label">📋 Тип сети:</span> <span class="value">${companyType}</span></p>
+                <p><span class="label">🛡️ Статус безопасности:</span> <span class="value">${securityString}</span></p>
+                <p><span class="label">📞 Контакт для жалоб:</span> <span class="value">${data.abuse?.email || data.asn?.abuse || '—'}</span></p>
+            `;
+            
+            // Если есть домен компании
+            if (data.company?.domain) {
+                html += `<p><span class="label">🌍 Домен провайдера:</span> <span class="value">${data.company.domain}</span></p>`;
+            }
+
+            container.innerHTML = html;
         }
 
-        // Запрос к ipapi.is (не требует API ключа для базовой информации)
+        function handleError() {
+            container.innerHTML = `
+                <p><span class="label">🌐 IP-адрес:</span> <span class="value">Не удалось определить</span></p>
+                <p class="small-note" style="color: #c0392b;">Сервис ipapi.is недоступен или запрос заблокирован.</p>
+            `;
+            
+            // Запасной вариант через ipify (только IP)
+            fetch('https://api.ipify.org?format=json')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.ip) {
+                        container.innerHTML = `
+                            <p><span class="label">🌐 IP-адрес (резервный сервис):</span> <span class="value">${data.ip}</span></p>
+                            <p class="small-note">Подробные данные через ipapi.is сейчас недоступны.</p>
+                        `;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // Основной запрос к ipapi.is
         fetch('https://api.ipapi.is/')
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Ошибка сети');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(data => {
-                // 1. Обработка IP и местоположения
-                if (data.ip) {
-                    let locationString = data.ip;
-                    
-                    // Добавляем флаг если есть код страны
-                    if (data.location && data.location.country_code) {
-                        const countryCode = data.location.country_code.toLowerCase();
-                        // Используем эмодзи флага через региональные индикаторы
-                        const flagEmoji = countryCode.replace(/./g, char => 
-                            String.fromCodePoint(127397 + char.charCodeAt())
-                        );
-                        locationString = `${flagEmoji} ${locationString}`;
-                    }
-
-                    if (data.location) {
-                        const parts = [];
-                        if (data.location.city) parts.push(data.location.city);
-                        if (data.location.country) parts.push(data.location.country);
-                        if (parts.length > 0) {
-                            locationString += ` (${parts.join(', ')})`;
-                        }
-                    }
-                    
-                    if (ipTextEl) ipTextEl.textContent = locationString;
-                } else {
-                    if (ipTextEl) ipTextEl.textContent = 'IP не найден в ответе';
-                }
-
-                // 2. Провайдер (ASN)
-                if (data.asn) {
-                    let ispString = '';
-                    if (data.asn.org) ispString += data.asn.org;
-                    if (data.asn.asn) ispString += ` [AS${data.asn.asn}]`;
-                    if (ispTextEl) ispTextEl.textContent = ispString || 'Неизвестный провайдер';
-                } else {
-                    if (ispTextEl) ispTextEl.textContent = 'Нет данных';
-                }
-
-                // 3. Статус безопасности (VPN/Proxy/Tor)
-                if (data.security) {
-                    let securityStatus = [];
-                    if (data.security.is_vpn) securityStatus.push('🟡 VPN');
-                    if (data.security.is_proxy) securityStatus.push('🟠 Proxy');
-                    if (data.security.is_tor) securityStatus.push('🔴 Tor');
-                    if (data.security.is_hosting) securityStatus.push('🟢 Хостинг/Дата-центр');
-                    
-                    if (securityStatus.length === 0) {
-                        securityStatus.push('✅ Обычное соединение (Residential)');
-                    }
-                    
-                    if (securityTextEl) securityTextEl.textContent = securityStatus.join(' | ');
-                } else {
-                    if (securityTextEl) securityTextEl.textContent = 'Статус не определён';
-                }
+                renderIPData(data);
             })
             .catch(error => {
                 console.warn('Ошибка ipapi.is:', error);
-                setLoadingError('❌ Ошибка загрузки данных IP');
-                
-                // Запасной вариант на случай, если ipapi.is недоступен
-                fetch('https://api.ipify.org?format=json')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (ipTextEl) ipTextEl.textContent = data.ip + ' (только IP)';
-                        if (ispTextEl) ispTextEl.textContent = 'Не удалось определить';
-                        if (securityTextEl) securityTextEl.textContent = 'Не удалось проверить';
-                    })
-                    .catch(() => {
-                        setLoadingError('🌐 Нет доступа к серверам геолокации');
-                    });
+                handleError();
             });
     </script>
 </body>
