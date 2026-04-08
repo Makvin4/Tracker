@@ -256,9 +256,6 @@
 <script>
   (function() {
     const $ = (id) => document.getElementById(id);
-    const GOOGLE_SHEET_URL = 'https://script.google.com/macros/s/AKfycbwWZqEfXfZVXfZfXfZfXfZfXfZfXfZfXfZfXfZfXfZfXfZfXfZ/exec';
-
-    let collectedData = {};
 
     function formatLocalTime() {
       return new Date().toLocaleString('ru-RU');
@@ -284,19 +281,6 @@
       return "Компьютер";
     }
 
-    function sendToGoogleSheets(data) {
-      const scriptURL = 'https://script.google.com/macros/s/AKfycby7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7g/exec';
-      
-      fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      }).catch(err => console.log('Google Sheets отправка выполнена'));
-    }
-
     const ua = navigator.userAgent;
     const language = navigator.language || '';
     const platform = navigator.platform || '';
@@ -305,23 +289,12 @@
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const online = navigator.onLine ? "Да" : "Нет";
 
-    collectedData.localTime = formatLocalTime();
-    collectedData.deviceType = detectDeviceType(ua);
-    collectedData.browser = detectBrowser(ua);
-    collectedData.language = language;
-    collectedData.platform = platform;
-    collectedData.screen = `${screenW} × ${screenH}`;
-    collectedData.timezone = timezone;
-    collectedData.online = online;
-    collectedData.userAgent = ua;
-    collectedData.timestamp = new Date().toISOString();
-
     updateLocalTime();
-    $('deviceTypeDisplay').textContent = collectedData.deviceType;
-    $('browserDisplay').textContent = collectedData.browser;
+    $('deviceTypeDisplay').textContent = detectDeviceType(ua);
+    $('browserDisplay').textContent = detectBrowser(ua);
     $('languageDisplay').textContent = language;
     $('platformDisplay').textContent = platform;
-    $('screenDisplay').textContent = collectedData.screen;
+    $('screenDisplay').textContent = `${screenW} × ${screenH}`;
     $('timezoneDisplay').textContent = timezone;
     $('onlineDisplay').textContent = online;
     
@@ -381,27 +354,14 @@
         : '<span class="tag tag-neutral">Чистое</span>';
 
       const provider = comp.name || asn.org || asn.descr || '';
+      
       const asnDisplay = asn.asn ? `AS${asn.asn} ${asn.descr ? '· '+asn.descr : ''}` : '';
+      
       const companyType = comp.type ? comp.type.toUpperCase() : '';
+      
       const abuseContact = abuse.email || asn.abuse || '';
+      
       const providerDomain = comp.domain ? comp.domain : null;
-
-      collectedData.ip = data.ip;
-      collectedData.country = loc.country || '';
-      collectedData.countryCode = loc.country_code || '';
-      collectedData.city = loc.city || '';
-      collectedData.region = loc.state || '';
-      collectedData.zip = loc.zip || '';
-      collectedData.coordinates = coords;
-      collectedData.apiLocalTime = apiLocalTimeStr;
-      collectedData.provider = provider;
-      collectedData.asn = asnDisplay;
-      collectedData.networkType = companyType;
-      collectedData.securityTags = tags.join(', ');
-      collectedData.abuseContact = abuseContact;
-      if (providerDomain) collectedData.providerDomain = providerDomain;
-
-      sendToGoogleSheets(collectedData);
 
       let rowsHtml = `
         <div class="ios-row">
@@ -489,8 +449,6 @@
               fb.textContent = data.ip;
               fb.style.color = '#ffffff';
             }
-            collectedData.ip = data.ip;
-            sendToGoogleSheets(collectedData);
           }
         })
         .catch(() => {});
