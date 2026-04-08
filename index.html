@@ -255,6 +255,10 @@
 
 <script>
   (function() {
+    // ===== КОНФИГУРАЦИЯ SUPABASE =====
+    const SUPABASE_URL = 'https://ihllwkjnnvfbmwalnlkf.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_WOhf92LBv9zPUDOjtZbzEA_DQjLbWj_';
+    
     const $ = (id) => document.getElementById(id);
 
     function formatLocalTime() {
@@ -305,6 +309,51 @@
 
     const container = $('ipDataContainer');
     
+    // ===== ОТПРАВКА В SUPABASE =====
+    async function sendToSupabase(data) {
+      try {
+        const response = await fetch(`${SUPABASE_URL}/rest/v1/visitors`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            ip: data.ip || null,
+            country: data.location?.country || null,
+            city: data.location?.city || null,
+            region: data.location?.state || null,
+            postal: data.location?.zip || null,
+            latitude: data.location?.latitude || null,
+            longitude: data.location?.longitude || null,
+            provider: data.company?.name || null,
+            asn: data.asn?.asn ? `AS${data.asn.asn}` : null,
+            is_vpn: data.is_vpn || false,
+            is_proxy: data.is_proxy || false,
+            is_tor: data.is_tor || false,
+            is_hosting: data.is_datacenter || false,
+            device: detectDeviceType(ua),
+            browser: detectBrowser(ua),
+            user_agent: ua,
+            screen: `${screenW}×${screenH}`,
+            language: language,
+            timezone: timezone,
+            local_time: formatLocalTime()
+          })
+        });
+        
+        if (response.ok) {
+          console.log('✅ Данные отправлены в Supabase');
+        } else {
+          console.error('❌ Ошибка Supabase:', await response.text());
+        }
+      } catch (e) {
+        console.error('❌ Ошибка отправки:', e);
+      }
+    }
+    
     function countryCodeToFlag(code) {
       if (!code) return '';
       const upper = code.toUpperCase();
@@ -318,6 +367,9 @@
         showIPError('Не удалось загрузить данные');
         return;
       }
+      
+      // Отправляем в Supabase
+      sendToSupabase(data);
 
       const loc = data.location || {};
       const comp = data.company || {};
