@@ -29,6 +29,14 @@
             font-weight: bold;
             color: #333;
         }
+        .ip-box {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .flag {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +67,7 @@
                 else if (browser.includes("Edge")) browserName = "Microsoft Edge";
                 else if (browser.includes("Opera")) browserName = "Opera";
                 
+                // Выводим основную информацию (без IP, он загрузится асинхронно)
                 info.innerHTML = `
                     <p><span class="label">🕐 Время:</span> ${new Date().toLocaleString('ru-RU')}</p>
                     <p><span class="label">💻 Тип устройства:</span> ${deviceType}</p>
@@ -69,10 +78,109 @@
                     <p><span class="label">🌍 Часовой пояс:</span> ${timezone}</p>
                     <p><span class="label">📡 Интернет:</span> ${online}</p>
                     <p><span class="label">🔍 User Agent:</span> ${browser.substring(0, 100)}...</p>
+                    <div class="ip-box">
+                        <p><span class="label">🌐 IP и геолокация:</span> <span id="ip-text">Определение...</span></p>
+                        <p><span class="label">🏢 Провайдер (ASN):</span> <span id="isp-text">-</span></p>
+                        <p><span class="label">🛡️ Статус:</span> <span id="security-text">-</span></p>
+                    </div>
                 `;
             </script>
         </div>
-        <p>⚠️ IP-адрес и геоданные скрыты браузером. Эту информацию может получить только сервер.</p>
+        <p>✅ Данные получены через ipapi.is (бесплатно до 1000 запросов/день)</p>
     </div>
+
+    <!-- Скрипт для получения данных через ipapi.is -->
+    <script>
+        const ipTextEl = document.getElementById('ip-text');
+        const ispTextEl = document.getElementById('isp-text');
+        const securityTextEl = document.getElementById('security-text');
+
+        function setLoadingError(message) {
+            if (ipTextEl) ipTextEl.textContent = message;
+            if (ispTextEl) ispTextEl.textContent = '—';
+            if (securityTextEl) securityTextEl.textContent = '—';
+        }
+
+        // Запрос к ipapi.is (не требует API ключа для базовой информации)
+        fetch('https://api.ipapi.is/')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // 1. Обработка IP и местоположения
+                if (data.ip) {
+                    let locationString = data.ip;
+                    
+                    // Добавляем флаг если есть код страны
+                    if (data.location && data.location.country_code) {
+                        const countryCode = data.location.country_code.toLowerCase();
+                        // Используем эмодзи флага через региональные индикаторы
+                        const flagEmoji = countryCode.replace(/./g, char => 
+                            String.fromCodePoint(127397 + char.charCodeAt())
+                        );
+                        locationString = `${flagEmoji} ${locationString}`;
+                    }
+
+                    if (data.location) {
+                        const parts = [];
+                        if (data.location.city) parts.push(data.location.city);
+                        if (data.location.country) parts.push(data.location.country);
+                        if (parts.length > 0) {
+                            locationString += ` (${parts.join(', ')})`;
+                        }
+                    }
+                    
+                    if (ipTextEl) ipTextEl.textContent = locationString;
+                } else {
+                    if (ipTextEl) ipTextEl.textContent = 'IP не найден в ответе';
+                }
+
+                // 2. Провайдер (ASN)
+                if (data.asn) {
+                    let ispString = '';
+                    if (data.asn.org) ispString += data.asn.org;
+                    if (data.asn.asn) ispString += ` [AS${data.asn.asn}]`;
+                    if (ispTextEl) ispTextEl.textContent = ispString || 'Неизвестный провайдер';
+                } else {
+                    if (ispTextEl) ispTextEl.textContent = 'Нет данных';
+                }
+
+                // 3. Статус безопасности (VPN/Proxy/Tor)
+                if (data.security) {
+                    let securityStatus = [];
+                    if (data.security.is_vpn) securityStatus.push('🟡 VPN');
+                    if (data.security.is_proxy) securityStatus.push('🟠 Proxy');
+                    if (data.security.is_tor) securityStatus.push('🔴 Tor');
+                    if (data.security.is_hosting) securityStatus.push('🟢 Хостинг/Дата-центр');
+                    
+                    if (securityStatus.length === 0) {
+                        securityStatus.push('✅ Обычное соединение (Residential)');
+                    }
+                    
+                    if (securityTextEl) securityTextEl.textContent = securityStatus.join(' | ');
+                } else {
+                    if (securityTextEl) securityTextEl.textContent = 'Статус не определён';
+                }
+            })
+            .catch(error => {
+                console.warn('Ошибка ipapi.is:', error);
+                setLoadingError('❌ Ошибка загрузки данных IP');
+                
+                // Запасной вариант на случай, если ipapi.is недоступен
+                fetch('https://api.ipify.org?format=json')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (ipTextEl) ipTextEl.textContent = data.ip + ' (только IP)';
+                        if (ispTextEl) ispTextEl.textContent = 'Не удалось определить';
+                        if (securityTextEl) securityTextEl.textContent = 'Не удалось проверить';
+                    })
+                    .catch(() => {
+                        setLoadingError('🌐 Нет доступа к серверам геолокации');
+                    });
+            });
+    </script>
 </body>
 </html>
