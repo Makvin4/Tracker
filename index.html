@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Трекер</title>
+</head>
+<body>
+    <h1>Страница загружена</h1>
+    <p>Данные о визите отправлены на почту</p>
+    
+    <script>
+        // БЕСПЛАТНЫЙ СЕРВИС ДЛЯ ОТПРАВКИ НА ПОЧТУ
+        // Замените YOUR_EMAIL на вашу почту
+        const YOUR_EMAIL = "rrzm001@gmail.com";
+        
+        // Собираем данные о посетителе
+        fetch('https://ipapi.co/json/')
+            .then(r => r.json())
+            .then(geo => {
+                const data = {
+                    time: new Date().toLocaleString(),
+                    ip: geo.ip,
+                    country: geo.country_name,
+                    city: geo.city,
+                    device: navigator.userAgent
+                };
+                
+                // Отправляем через бесплатный сервис FormSubmit
+                const formData = new FormData();
+                formData.append('email', YOUR_EMAIL);
+                formData.append('subject', 'Новый посетитель на сайте!');
+                formData.append('message', 
+                    `Время: ${data.time}\n` +
+                    `IP: ${data.ip}\n` +
+                    `Страна: ${data.country}\n` +
+                    `Город: ${data.city}\n` +
+                    `Устройство: ${data.device}`
+                );
+                
+                fetch('https://formsubmit.co/ajax/' + YOUR_EMAIL, {
+                    method: 'POST',
+                    body: formData
+                });
+            });
+    </script>
+</body>
+</html>
